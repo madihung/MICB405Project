@@ -5,9 +5,14 @@ library(pheatmap)
 library(RColorBrewer)
 library(apeglm)
 library (dplyr)
+library(biomaRt)
+library(AnnotationDbi)
+library(org.Mm.eg.db)
+library(GO.db)
+library(GOstats)
+library(ggplot2)
 
 #read meta data
-
 metadata <- read_csv("metadata.csv")
 file <- paste0(metadata$Sample, ".htseq.out")
 file.exists(file)
@@ -34,10 +39,12 @@ deseq
 #DESeq modelling 
 dds <- DESeq(deseq)
 
-#sample clustering with log-transformed data
+##sample clustering with log-transformed data
+#PCA plot
 rld <- rlog(dds)
 plotPCA(rld,intgroup = "cell_type" )
 
+#heatmap
 sample_dists <- dist(t(assay(rld)))
 sample_dist_matrix <- as.matrix(sample_dists)
 colnames(sample_dist_matrix) <- NULL
@@ -48,47 +55,82 @@ pheatmap(sample_dist_matrix,
          clustering_distance_cols = sample_dists, 
          col = colours)
 
+#differentially expressed genes
 
-
-#filtering differentially expressed gene
 resultsNames(dds)
 
-res <- results(dds, name = "cell_type_CD8_vs_CLP")
-head(res)
-summary(res)
+res1 <- results(dds, name = "cell_type_CD8_vs_CLP")
 
-significant_res <- subset(res, padj < 0.05)
-head(significant_res)
+res2 <- as.data.frame(results(dds, name = "cell_type_CD8_vs_CLP")) %>%
+  rownames_to_column("ENSEMBL")
 
-more_upregulated_in_CD8 <- subset(res, padj < 0.05 & log2FoldChange > 0 )
-more_downregulated_in_CD8 <- subset(res, padj < 0.05 & log2FoldChange < 0 )
+significant_res <- subset(res1, padj < 0.05)
+
+up_in_CD8 <- subset(res1, padj < 0.05 & log2FoldChange > 0 )
+down_in_CD8 <- subset(res1, padj < 0.05 & log2FoldChange < 0 )
 
 
 ##result visulization 
 
-#logfold change
+#logfold change - MA plot
 resLFC <- lfcShrink(dds, coef = "cell_type_CD8_vs_CLP", type = "apeglm" )
 resLFC
 plotMA(resLFC, ylim=c(-10,10))
 
+#logfold change - volcanol plot
+padj.cutoff <- 0.05
+lfc.cutoff <- 0.58
+threshold <- res2$padj < padj.cutoff & abs(res2$log2FoldChange) > lfc.cutoff
+
+res2 %>% 
+  ggplot(aes(x = log2FoldChange, y = -log10(padj),colour = threshold)) + geom_point()
+
+
 #plot the gene with the lowest p.adj value between cell types
 plotCounts(dds, gene=which.min(res$padj), intgroup="cell_type")
 
+#plot specific gene with gene ID
+plotCounts(dds, "ENSMUSG00000005474",intgroup = c("cell_type"))
+
+
+#adding annotation to genes 
+
+res2 <- as.data.frame(results(dds, name = "cell_type_CD8_vs_CLP")) %>%
+  rownames_to_column("ENSEMBL")
+
+anno <- AnnotationDbi::select(org.Mm.eg.db,keys=res2$ENSEMBL,
+                              columns=c("ENSEMBL","SYMBOL","GENENAME","ENTREZID"),
+                              keytype="ENSEMBL") %>% filter(!duplicated(ENSEMBL))
+
+dim(res2)
+dim(anno)
+
+res <- left_join(res2, anno,by="ENSEMBL")
+head(res)
+
+#filtering annotated differentially expressed gene for export
+significant_res <- subset(res, padj < 0.05) %>% arrange (, padj)
+head(significant_res)
+
+more_upregulated_in_CD8 <- subset(res, padj < 0.05 & log2FoldChange > 0 ) %>% arrange (, padj)
+more_downregulated_in_CD8 <- subset(res, padj < 0.05 & log2FoldChange < 0 ) %>% arrange (, padj)
+
+head(more_upregulated_in_CD8)
+head(more_downregulated_in_CD8)
 
 #data export
-write.csv(as.data.frame(significant_res), file = "cell_type_CD8_vs_CLP.csv")
+write.csv(as.data.frame(significant_res), file = "sorted cell_type_CD8_vs_CLP.csv")
 
-write.csv(as.data.frame(more_upregulated_in_CD8), file = "upregulated in CD8 vs CLP.csv")
+write.csv(as.data.frame(more_upregulated_in_CD8), file = "sorted upregulated in CD8 vs CLP.csv")
 
-write.csv(as.data.frame(more_downregulated_in_CD8), file = "downregulated in CD8 vs CLP.csv")
+write.csv(as.data.frame(more_downregulated_in_CD8), file = "sorted downregulated in CD8 vs CLP.csv")
+
+
 
 ##GO Term enrichment analysis
-library(AnnotationDbi)
-library(org.Mm.eg.db)
-library(GO.db)
-library(GOstats)
+significant_res1 <- subset(res1, padj < 0.05)
 
-annotated_significant_results <- significant_res
+annotated_significant_results <- significant_res1
 
 annotated_significant_results$symbol <- mapIds(
   org.Mm.eg.db,
@@ -97,6 +139,7 @@ annotated_significant_results$symbol <- mapIds(
   column = "SYMBOL",
   multiVals = "first"
 )
+
 
 annotated_significant_results$entrez <- mapIds(
   org.Mm.eg.db,
@@ -128,6 +171,7 @@ go_bp_upregulated <- hyperGTest(new("GOHyperGParams",
                                     pvalueCutoff = 0.01,
                                     conditional = FALSE,
                                     testDirection = "over"))
+
 top10_enriched_GO_terms_up <- go_bp_upregulated %>% summary() %>% head(10)
 
 top10_enriched_GO_terms_up
@@ -153,12 +197,10 @@ top10_enriched_GO_terms_down <- go_bp_downregulated %>% summary() %>% head(10)
 
 top10_enriched_GO_terms_down
 
-#sort differentially expressed gene
 
-upregulated <- read_csv("upregulated in CD8 vs CLP.csv")
 
-a <- arrange(upregulated , padj)
-View(a)
+
+
 
 
 
