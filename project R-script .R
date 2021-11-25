@@ -4,6 +4,7 @@ library(tidyverse)
 library(pheatmap)
 library(RColorBrewer)
 library(apeglm)
+library (dplyr)
 
 #read meta data
 
@@ -27,7 +28,7 @@ ddsHTSeq$cell_type <- relevel(ddsHTSeq$cell_type, ref = "CLP")
 keep <- rowSums(counts(ddsHTSeq)) >= 10
 deseq <- ddsHTSeq[keep, ]
 
-ddsHTSeq
+ddsHTSeq$cell_type
 deseq
 
 #DESeq modelling 
@@ -105,10 +106,12 @@ annotated_significant_results$entrez <- mapIds(
   multiVals = "first"
 )
 
+
 all_genes <- annotated_significant_results %>% 
   as.data.frame() %>% 
   pull(entrez) %>% 
   unique()
+
 
 #top10 GO terms for upregulated genes in CD8
 genes_upregulated <- annotated_significant_results %>% 
@@ -149,3 +152,16 @@ go_bp_downregulated <- hyperGTest(new("GOHyperGParams",
 top10_enriched_GO_terms_down <- go_bp_downregulated %>% summary() %>% head(10)
 
 top10_enriched_GO_terms_down
+
+#sort differentially expressed gene
+
+upregulated <- read_csv("upregulated in CD8 vs CLP.csv")
+
+a <- arrange(upregulated , padj)
+View(a)
+
+
+
+
+
+
