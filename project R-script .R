@@ -196,10 +196,25 @@ top10_enriched_GO_terms_down <- go_bp_downregulated %>% summary() %>% head(10)
 
 top10_enriched_GO_terms_down
 
+
+#For annotated peaks --------------------------------------------------
 #read peak annotated files
 cd8_ann <- read_csv("cd8_annotated.csv")
 clp_cd8_ann <- read_csv("clp_cd8_annotated.csv")
 clp_ann <- read_csv("clp_nocd8_annotated.csv")
+
+#rename Entrez ID columns to match in tables
+names(more_upregulated_in_CD8)[names(more_upregulated_in_CD8) == "ENTREZID"] <- "Entrez ID"
+names(more_downregulated_in_CD8)[names(more_downregulated_in_CD8) == "ENTREZID"] <- "Entrez ID"
+
+#return joined rows with matching entrez ids
+cd8_upreg = merge(x=cd8_ann, y=more_upregulated_in_CD8, by="Entrez ID")
+cd8_downreg = merge(x=cd8_ann, y=more_downregulated_in_CD8, by="Entrez ID")
+clp_upreg = merge(x=clp_ann, y=more_upregulated_in_CD8, by="Entrez ID")
+clp_downreg = merge(x=clp_ann, y=more_downregulated_in_CD8, by="Entrez ID")
+
+
+
 
 
 
