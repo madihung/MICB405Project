@@ -12,7 +12,7 @@ library(GO.db)
 library(GOstats)
 library(ggplot2)
 
-#read meta data
+#read meta data [file used: CLP = 85,87.htseq.out | CD8 = 17,20.htseq.out]
 metadata <- read_csv("metadata.csv")
 file <- paste0(metadata$Sample, ".htseq.out")
 file.exists(file)
@@ -74,7 +74,6 @@ down_in_CD8 <- subset(res1, padj < 0.05 & log2FoldChange < 0 )
 
 #logfold change - MA plot
 resLFC <- lfcShrink(dds, coef = "cell_type_CD8_vs_CLP", type = "apeglm" )
-resLFC
 plotMA(resLFC, ylim=c(-10,10))
 
 #logfold change - volcanol plot
@@ -87,7 +86,7 @@ res2 %>%
 
 
 #plot the gene with the lowest p.adj value between cell types
-plotCounts(dds, gene=which.min(res$padj), intgroup="cell_type")
+plotCounts(dds, gene=which.min(res1$padj), intgroup="cell_type")
 
 #plot specific gene with gene ID
 plotCounts(dds, "ENSMUSG00000005474",intgroup = c("cell_type"))
@@ -197,6 +196,10 @@ top10_enriched_GO_terms_down <- go_bp_downregulated %>% summary() %>% head(10)
 
 top10_enriched_GO_terms_down
 
+#read peak annotated files
+cd8_ann <- read_csv("cd8_annotated.csv")
+clp_cd8_ann <- read_csv("clp_cd8_annotated.csv")
+clp_ann <- read_csv("clp_nocd8_annotated.csv")
 
 
 
