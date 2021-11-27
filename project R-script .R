@@ -11,6 +11,7 @@ library(org.Mm.eg.db)
 library(GO.db)
 library(GOstats)
 library(ggplot2)
+library("pheatmap")
 
 #read meta data [file used: CLP = 85,87.htseq.out | CD8 = 17,20.htseq.out]
 metadata <- read_csv("metadata.csv")
@@ -90,6 +91,14 @@ plotCounts(dds, gene=which.min(res1$padj), intgroup="cell_type")
 
 #plot specific gene with gene ID
 plotCounts(dds, "ENSMUSG00000005474",intgroup = c("cell_type"))
+
+#gene expression heatmap 
+ntd <- normTransform(dds)
+select <- order(rowMeans(counts(dds,normalized =T )),
+                decreasing = T)
+
+df <- as.data.frame(colData(dds)[,c("cell_type")])
+pheatmap(assay(ntd)[select,], cluster_rows = F, show_rownames = F, cluster_cols = F, annotation_colors = df )
 
 
 #adding annotation to genes 
@@ -210,8 +219,8 @@ names(more_downregulated_in_CD8)[names(more_downregulated_in_CD8) == "ENTREZID"]
 #return joined rows with matching entrez ids
 cd8_upreg = merge(x=cd8_ann, y=more_upregulated_in_CD8, by="Entrez ID")
 cd8_downreg = merge(x=cd8_ann, y=more_downregulated_in_CD8, by="Entrez ID")
-clp_upreg = merge(x=clp_ann, y=more_upregulated_in_CD8, by="Entrez ID")
-clp_downreg = merge(x=clp_ann, y=more_downregulated_in_CD8, by="Entrez ID")
+clp_downreg = merge(x=clp_ann, y=more_upregulated_in_CD8, by="Entrez ID")
+clp_upreg = merge(x=clp_ann, y=more_downregulated_in_CD8, by="Entrez ID")
 
 
 
