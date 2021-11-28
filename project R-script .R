@@ -218,20 +218,24 @@ names(more_downregulated_in_CD8)[names(more_downregulated_in_CD8) == "ENTREZID"]
 
 #return joined rows with matching entrez ids
 cd8_upreg = merge(x=cd8_ann, y=more_upregulated_in_CD8, by="Entrez ID") %>% 
-  arrange (, padj) 
-cd8_upreg = subset(cd8_upreg, select = (c("Entrez ID", "Annotation", "Gene Name", "Gene Description", "ENSEMBL", "padj")))
+  arrange (, padj)
+cd8_upreg = subset(cd8_upreg, select = (c("Chr", "Start", "End", "Peak Score")))
+write.csv(cd8_upreg, file= "~/Desktop/MICB405/MICB405Project/cd8_upreg.csv", row.names=FALSE)
 
 cd8_downreg = merge(x=cd8_ann, y=more_downregulated_in_CD8, by="Entrez ID") %>% 
   arrange (, padj) 
-cd8_downreg = subset(cd8_downreg, select = (c("Entrez ID", "Annotation", "Gene Name", "Gene Description", "ENSEMBL", "padj")))
+cd8_downreg = subset(cd8_upreg, select = (c("Chr", "Start", "End", "Peak Score")))
+write.csv(cd8_downreg, file= "~/Desktop/MICB405/MICB405Project/cd8_upreg.csv", row.names=FALSE)
 
 clp_downreg = merge(x=clp_ann, y=more_upregulated_in_CD8, by="Entrez ID") %>%
   arrange (, padj)
-clp_downreg = subset(clp_downreg, select = (c("Entrez ID", "Annotation", "Gene Name", "Gene Description", "ENSEMBL", "padj")))
+clp_downreg = subset(clp_downreg, select = (c("Chr", "Start", "End", "Peak Score")))
+write.csv(clp_downreg, file= "~/Desktop/MICB405/MICB405Project/clp_downreg.csv", row.names=FALSE)
 
 clp_upreg = merge(x=clp_ann, y=more_downregulated_in_CD8, by="Entrez ID") %>%
   arrange (, padj)
-clp_upreg = subset(clp_upreg, select = (c("Entrez ID", "Annotation", "Gene Name", "Gene Description", "ENSEMBL", "padj")))
+clp_upreg = subset(clp_upreg, select = (c("Chr", "Start", "End", "Peak Score")))
+write.csv(clp_upreg, file= "~/Desktop/MICB405/MICB405Project/clp_upreg.csv", row.names=FALSE)
 
 
 
