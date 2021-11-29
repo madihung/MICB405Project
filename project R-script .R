@@ -219,29 +219,39 @@ names(more_downregulated_in_CD8)[names(more_downregulated_in_CD8) == "ENTREZID"]
 #return joined rows with matching entrez ids
 cd8_upreg = merge(x=cd8_ann, y=more_upregulated_in_CD8, by="Entrez ID") %>% 
   arrange (, padj)
-cd8_upreg = subset(cd8_upreg, select = (c("Chr", "Start", "End", "Peak Score")))
-write.csv(cd8_upreg, file= "~/Desktop/MICB405/MICB405Project/cd8_upreg.csv", row.names=FALSE)
 
 cd8_downreg = merge(x=cd8_ann, y=more_downregulated_in_CD8, by="Entrez ID") %>% 
   arrange (, padj) 
-cd8_downreg = subset(cd8_upreg, select = (c("Chr", "Start", "End", "Peak Score")))
-write.csv(cd8_downreg, file= "~/Desktop/MICB405/MICB405Project/cd8_upreg.csv", row.names=FALSE)
 
 clp_downreg = merge(x=clp_ann, y=more_upregulated_in_CD8, by="Entrez ID") %>%
   arrange (, padj)
-clp_downreg = subset(clp_downreg, select = (c("Chr", "Start", "End", "Peak Score")))
-write.csv(clp_downreg, file= "~/Desktop/MICB405/MICB405Project/clp_downreg.csv", row.names=FALSE)
 
 clp_upreg = merge(x=clp_ann, y=more_downregulated_in_CD8, by="Entrez ID") %>%
   arrange (, padj)
+
+clp_cd8 = merge(x=clp_ann, y=cd8_upreg, by="Entrez ID") %>%
+  arrange (, padj)
+
+maintained = merge(x=clp_upreg, y=cd8_upreg, by="Entrez ID") 
+
+
+
+# Subset data to use for bigwigs
+cd8_upreg = subset(cd8_upreg, select = (c("Chr", "Start", "End", "Peak Score")))
+cd8_downreg = subset(cd8_downreg, select = (c("Chr", "Start", "End", "Peak Score")))
+clp_downreg = subset(clp_downreg, select = (c("Chr", "Start", "End", "Peak Score")))
 clp_upreg = subset(clp_upreg, select = (c("Chr", "Start", "End", "Peak Score")))
+clp_cd8 = subset(clp_cd8, select = (c("Chr", "Start", "End", "Peak Score")))
+
+# create csv and txt files 
+write.csv(cd8_upreg, file= "~/Desktop/MICB405/MICB405Project/cd8_upreg.csv", row.names=FALSE)
 write.csv(clp_upreg, file= "~/Desktop/MICB405/MICB405Project/clp_upreg.csv", row.names=FALSE)
+write.table(cd8_upreg, sep="\t", file= "~/Desktop/MICB405/MICB405Project/cd8_upreg.txt", row.names=FALSE)
+write.table(clp_upreg, sep="\t", file= "~/Desktop/MICB405/MICB405Project/clp_upreg.txt", row.names=FALSE)
+write.table(clp_cd8, sep="\t", file= "~/Desktop/MICB405/MICB405Project/clp_cd8.txt", row.names=FALSE)
 
 
 
-
-
- 
 
 
 

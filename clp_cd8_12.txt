@@ -1,0 +1,1 @@
+"Chr.x"	"Start.x"	"End.x"	"Peak Score.x"	"Chr.y"	"Start.y"	"End.y"	"Peak Score.y"
