@@ -304,22 +304,13 @@ names(more_upregulated_in_CD8)[names(more_upregulated_in_CD8) == "ENTREZID"] <- 
 names(more_downregulated_in_CD8)[names(more_downregulated_in_CD8) == "ENTREZID"] <- "Entrez ID"
 
 #return joined rows with matching entrez ids
-cd8_upreg = merge(x=cd8_ann, y=more_upregulated_in_CD8, by="Entrez ID") %>% 
+cd8_specific = merge(x=cd8_ann, y=more_upregulated_in_CD8, by="Entrez ID") %>% 
   arrange (, padj)
 
-cd8_downreg = merge(x=cd8_ann, y=more_downregulated_in_CD8, by="Entrez ID") %>% 
-  arrange (, padj) 
-
-clp_downreg = merge(x=clp_ann, y=more_upregulated_in_CD8, by="Entrez ID") %>%
+clp_specific = merge(x=clp_ann, y=more_downregulated_in_CD8, by="Entrez ID") %>%
   arrange (, padj)
 
-clp_upreg = merge(x=clp_ann, y=more_downregulated_in_CD8, by="Entrez ID") %>%
-  arrange (, padj)
-
-clp_cd8 = merge(x=clp_ann, y=cd8_upreg, by="Entrez ID") %>%
-  arrange (, padj)
-
-maintained = merge(x=clp_upreg, y=cd8_upreg, by="Entrez ID") 
+maintained = merge(x=clp_cd8_ann , y=cd8_upreg, by="Entrez ID") 
 
 
 
