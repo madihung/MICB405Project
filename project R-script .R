@@ -310,16 +310,9 @@ cd8_specific = merge(x=cd8_ann, y=more_upregulated_in_CD8, by="Entrez ID") %>%
 clp_specific = merge(x=clp_ann, y=more_downregulated_in_CD8, by="Entrez ID") %>%
   arrange (, padj)
 
-maintained = merge(x=clp_cd8_ann , y=cd8_upreg, by="Entrez ID") 
-
-
-
 # Subset data to use for bigwigs
-cd8_upreg = subset(cd8_upreg, select = (c("Chr", "Start", "End", "Peak Score")))
-cd8_downreg = subset(cd8_downreg, select = (c("Chr", "Start", "End", "Peak Score")))
-clp_downreg = subset(clp_downreg, select = (c("Chr", "Start", "End", "Peak Score")))
-clp_upreg = subset(clp_upreg, select = (c("Chr", "Start", "End", "Peak Score")))
-clp_cd8 = subset(clp_cd8, select = (c("Chr", "Start", "End", "Peak Score")))
+cd8_specific = subset(cd8_specific, select = (c("Chr", "Start", "End", "Peak Score")))
+clp_specific = subset(clp_specific, select = (c("Chr", "Start", "End", "Peak Score")))
 
 # create csv and txt files 
 write.csv(cd8_upreg, file= "~/Desktop/MICB405/MICB405Project/cd8_upreg.csv", row.names=FALSE)
